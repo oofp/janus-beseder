@@ -16,7 +16,7 @@
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE OverloadedLabels      #-}
 
-module JanusB2BApp where
+module JanusB2BSkipApp where
 
 import            Beseder.Janus.JanusCallProv
 import            Beseder.Janus.JanusCallProvImpl
@@ -28,7 +28,7 @@ import            Beseder.Utils
 import            Data.String
 import            Control.Monad.Cont (ContT)
 import            Control.Monad.Identity (IdentityT)
-import            Protolude                    hiding (Product, handle, return, gets, lift, liftIO,
+import            Protolude                    hiding (Product, handle, return, gets, lift, liftIO, wait,
                                                (>>), (>>=), forever, until,try,on, gets, First)
 
 
@@ -37,19 +37,18 @@ b2bTrans :: (CallProv TaskQ par1, CallProv TaskQ par2, Show par1, Show par2) =>
 b2bTrans callRes1 callRes2 dest = do                -- [()]
   newRes #call1 callRes1                            -- [(call1/Idle)]
   while $ do  
-    reach @("call1" :? IsCallOffered) nextEv        -- [(call1/Offered)]
+    skipTo @("call1" :? IsCallOffered)              -- [(call1/Offered)]
     sdpOffer <- opRes #call1 getSDPOffer
     try @("call1" :? IsCallAlive) $ do              -- break out if call1 disconnects
       newRes #call2 callRes2                        -- [(call1/Offered, call2/Idle)]
       invoke #call2 (MakeCall dest sdpOffer)        -- [(call1/Offered, call2/Dialing)]
       try @("call2" :? IsCallAlive) $ do            -- break out if call2 disconnects
-        reach @("call2" :? IsCallAnswered) nextEv   -- [(call1/Offered, call2/Answered)]
+        skipTo @("call2" :? IsCallAnswered)         -- [(call1/Offered, call2/Answered)]
         sdpAnswr <- opRes #call2 getSDPAnswer
         invoke #call1 (AnswerCall sdpAnswr)         -- [(call1/Answering, call2/Answered)]
-        reach @("call2" :? IsCallConnected 
-            :&& "call1" :? IsCallConnected) 
-          (nextEv >> nextEv)                        -- [(call1/Connected, call2/Connected)]
-        nextEv
+        skipTo @("call2" :? IsCallConnected 
+            :&& "call1" :? IsCallConnected)         -- [(call1/Connected, call2/Connected)]
+        wait
     on @(By "call2") (clear #call2)  
     on @("call1" :? IsCallAlive) (invoke #call1 DropCall)
     invoke #call1 ResetCall                         -- [(call1/Idle)]

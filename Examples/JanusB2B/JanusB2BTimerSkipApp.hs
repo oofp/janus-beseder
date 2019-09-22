@@ -84,7 +84,7 @@ callHandler callRes2 dest timeoutSec = do
   invoke #call1 ResetCall
 
 b2bTrans :: (CallProv TaskQ par1, CallProv TaskQ par2, Show par1, Show par2) => 
-    CallRes par1 -> CallRes par2 -> Text -> Int -> STransApp (ContT Bool) TaskQ NoSplitter '[()] '('[()], ('[])) ()      
+    CallRes par1 -> CallRes par2 -> Text -> Int -> STransApp (ContT Bool) TaskQ NoSplitter '[()] '(('[()]),'[]) ()      
 b2bTrans callRes1 callRes2 dest timeoutSec = MkApp $ do 
   newRes #call1 callRes1
   while $ do

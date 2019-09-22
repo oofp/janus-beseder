@@ -57,7 +57,7 @@ executable JanusB2B
 executable JanusB2BTimer
   hs-source-dirs:      Examples/JanusB2B
   main-is:             MainTimer.hs
-  other-modules:       JanusB2BTimerLoopApp
+  other-modules:       JanusB2BTimerSkip2App
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-T -dshow-passes -fomit-interface-pragmas -fprint-potential-instances
   build-depends:       base
                      , janus-beseder

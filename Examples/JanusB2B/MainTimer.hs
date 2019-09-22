@@ -21,7 +21,7 @@ import            Beseder.Janus.JanusCallProvImpl
 import            Comm.Janus.JanusConnector
 import            System.Environment (getArgs)
 import            Data.Text
-import            JanusB2BTimerLoopApp
+import            JanusB2BTimerSkip2App
 import            Beseder.Base.Base
 import            Beseder.Base.Common
 import            Beseder.Base.Control (STransApp (..))
@@ -61,7 +61,7 @@ b2bApp srvIP port sipRegPs videoDest videoUser = do
   waitForConnectivity conHandle
   let sipRes = sipCallRes conHandle  sipRegPs
       videoRes = videoCallRes conHandle videoUser
-      transApp = MkApp $ b2bTrans sipRes videoRes videoDest 15 180   
+      transApp = b2bTrans sipRes videoRes videoDest 15 180   
   runAsyncApp transApp
 
 setupLog::IO()

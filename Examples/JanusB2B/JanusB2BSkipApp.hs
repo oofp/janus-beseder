@@ -33,7 +33,7 @@ import            Protolude                    hiding (Product, handle, return, 
 
 
 b2bTrans :: (CallProv TaskQ par1, CallProv TaskQ par2, Show par1, Show par2) => 
-    CallRes par1 -> CallRes par2 -> Text -> STrans (ContT Bool) TaskQ NoSplitter '[()] _ _ ()      
+    CallRes par1 -> CallRes par2 -> Text -> STrans (ContT Bool) TaskQ NoSplitter '[()] '(('[()]),'[]) _ ()      
 b2bTrans callRes1 callRes2 dest = do                -- [()]
   newRes #call1 callRes1                            -- [(call1/Idle)]
   while $ do  
@@ -46,9 +46,9 @@ b2bTrans callRes1 callRes2 dest = do                -- [()]
         skipTo @("call2" :? IsCallAnswered)         -- [(call1/Offered, call2/Answered)]
         sdpAnswr <- opRes #call2 getSDPAnswer
         invoke #call1 (AnswerCall sdpAnswr)         -- [(call1/Answering, call2/Answered)]
-        skipTo @("call2" :? IsCallConnected 
-            :&& "call1" :? IsCallConnected)         -- [(call1/Connected, call2/Connected)]
-        wait
+        skipTo @("call2" :? IsCallConnected         -- [(call1/Answering, call2/Connected)
+                :&& "call1" :? IsCallConnected)     -- ,(call1/Connected, call2/Answered)]
+        wait                                        -- [(call1/Connected, call2/Connected)]
     on @(By "call2") (clear #call2)  
     on @("call1" :? IsCallAlive) (invoke #call1 DropCall)
     invoke #call1 ResetCall                         -- [(call1/Idle)]

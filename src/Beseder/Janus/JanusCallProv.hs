@@ -36,6 +36,7 @@ data ResetCall = ResetCall deriving (Show, Eq)
 data ReleaseCall = ReleaseCall deriving (Show, Eq)
 instance GetInstance DropCall where getInstance = DropCall
 instance GetInstance ReleaseCall where getInstance = ReleaseCall
+instance GetInstance ResetCall where getInstance = ResetCall
 
 newtype SDPOffer = SDPOffer Text deriving (Show,Eq)
 newtype SDPAnswer = SDPAnswer Text deriving (Show,Eq)

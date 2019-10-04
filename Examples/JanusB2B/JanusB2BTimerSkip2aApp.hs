@@ -28,7 +28,7 @@ import            Protolude                    hiding (Product, handle, return, 
                                                (>>), (>>=), forever, until,try,on, gets, First)
 
 callHandler :: (CallProv TaskQ par1, CallProv TaskQ par2, Show par1, Show par2) => 
-  CallRes par2 -> Text -> Int -> Int -> STrans (ContT Bool) TaskQ NoSplitter '[CallIdle TaskQ par1 "call1"] '[CallIdle TaskQ par1 "call1"] '[] _ () -- '('[CallIdle TaskQ par1 "call1"],('[])) ()
+  CallRes par2 -> Text -> Int -> Int -> STrans (ContT Bool) TaskQ NoSplitter '[CallIdle TaskQ par1 "call1"] '(('[CallIdle TaskQ par1 "call1"]),'[]) _ () -- '('[CallIdle TaskQ par1 "call1"],('[])) ()
 callHandler callRes2 dest timeoutSec1 timeoutSec2 = do
   skipTo @("call1" :? IsCallOffered) 
   sdpOffer <- opRes #call1 getSDPOffer
@@ -48,7 +48,7 @@ callHandler callRes2 dest timeoutSec1 timeoutSec2 = do
       skipTo @("call2" :? IsCallConnected :&& "call1" :? IsCallConnected) 
       invoke #timer2 (StartTimer timeoutSec2)
       _t1 :: _ <- whatNext -- [(call1/Connected, call2/Connected, t1/Stopped, t2/Armed)]
-      skipAll
+      wait
   on @(By "timer1") (clear #timer1)  
   on @(By "timer2") (clear #timer2)  
   on @(By "call2") (clear #call2)  
@@ -57,13 +57,15 @@ callHandler callRes2 dest timeoutSec1 timeoutSec2 = do
 
 b2bTrans :: (CallProv TaskQ par1, CallProv TaskQ par2, Show par1, Show par2) => 
     CallRes par1 -> CallRes par2 -> Text -> Int -> Int ->
-      STransApp (ContT Bool) TaskQ NoSplitter '[()] '[()] '[] ()      
+      STransApp (ContT Bool) TaskQ NoSplitter '[()] '(('[()]),'[]) ()      
 b2bTrans callRes1 callRes2 dest timeoutCalling timeoutConnected = MkApp $ do 
   newRes #call1 callRes1
   while $ do
     callHandler callRes2 dest timeoutCalling timeoutConnected
     return True
   clear #call1  
+
+
 
 {-
 [1 of 2] Compiling JanusB2BTimerSkip2App

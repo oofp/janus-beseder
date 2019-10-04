@@ -33,8 +33,8 @@ import            Protolude                    hiding (Product, handle, return, 
 
 
 b2bTrans :: (CallProv TaskQ par1, CallProv TaskQ par2, Show par1, Show par2) => 
-    CallRes par1 -> CallRes par2 -> Text -> STrans (ContT Bool) TaskQ NoSplitter '[()] _ _ ()      
-b2bTrans callRes1 callRes2 dest = do                -- [()]
+    CallRes par1 -> CallRes par2 -> Text -> STransApp (ContT Bool) TaskQ NoSplitter '[()] '[()] '[] ()      
+b2bTrans callRes1 callRes2 dest = MkApp $ do                -- [()]
   newRes #call1 callRes1                            -- [(call1/Idle)]
   while $ do  
     reach @("call1" :? IsCallOffered) nextEv        -- [(call1/Offered)]

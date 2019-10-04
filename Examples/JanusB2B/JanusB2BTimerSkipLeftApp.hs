@@ -16,7 +16,7 @@
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE OverloadedLabels      #-}
 
-module JanusB2BTimerSkipApp where
+module JanusB2BTimerSkipLeftApp where
 
 import            Beseder.Janus.JanusCallProv
 import            Beseder.Janus.JanusCallProvImpl
@@ -30,34 +30,39 @@ import            Protolude                    hiding (Product, handle, return, 
                                                (>>), (>>=), forever, until,try,on, gets, First)
 
 callHandler :: (CallProv TaskQ par1, CallProv TaskQ par2, Show par1, Show par2) => 
-  CallRes par2 -> Text -> Int -> STrans (ContT Bool) TaskQ NoSplitter '[CallIdle TaskQ par1 "call1"] _ _ _ () -- '('[CallIdle TaskQ par1 "call1"],('[])) ()
+  CallRes par2 -> Text -> Int -> STrans (ContT Bool) TaskQ NoSplitter '[CallIdle TaskQ par1 "call1"] _ _ () -- '('[CallIdle TaskQ par1 "call1"],('[])) ()
 callHandler callRes2 dest timeoutSec = do
-  skipTo @("call1" :? IsCallOffered)   
-  sdpOffer <- opRes #call1 getSDPOffer
-  try @("call1" :? IsCallAlive) $ do 
-    newRes #call2 callRes2
-    invoke #call2 (MakeCall dest sdpOffer) 
-    newRes #timer TimerRes
-    invoke #timer (StartTimer timeoutSec)
-    try @("call2" :? IsCallAlive :&& (Not ("timer" :? IsTimerTriggered))) $ do
-      skipTo @("call2" :? IsCallAnswered)
-      invoke #timer StopTimer
-      sdpAnswr <- opRes #call2 getSDPAnswer
-      invoke #call1 (AnswerCall sdpAnswr)
-      skipTo @("call2" :? IsCallConnected :&& "call1" :? IsCallConnected) 
-      _t1 :: _ <- whatNext
-      skipAll
-  on @(By "timer") (clear #timer)  
-  on @(By "call2") (clear #call2)  
-  on @("call1" :? IsCallAlive) (invoke #call1 DropCall)
-  invoke #call1 ResetCall
+  ((((skipTo @("call1" :? IsCallOffered) >>   
+      (opRes #call1 getSDPOffer (\sdpOffer -> 
+        try @("call1" :? IsCallAlive) wait))) >> -- do 
+          {-
+          newRes #call2 callRes2
+          invoke #call2 (MakeCall dest sdpOffer) 
+          newRes #timer TimerRes
+          invoke #timer (StartTimer timeoutSec)
+          try @("call2" :? IsCallAlive :&& (Not ("timer" :? IsTimerTriggered))) $ do
+            skipTo @("call2" :? IsCallAnswered)
+            invoke #timer StopTimer
+            sdpAnswr <- opRes #call2 getSDPAnswer
+            invoke #call1 (AnswerCall sdpAnswr)
+            skipTo @("call2" :? IsCallConnected :&& "call1" :? IsCallConnected) 
+            _t1 :: _ <- whatNext
+            wait)) >>
+           -} 
+    on @(By "timer") (clear #timer)) >>  
+    on @(By "call2") (clear #call2)) >>  
+    on @("call1" :? IsCallAlive) (invoke #call1 DropCall)) >>
+    invoke #call1 ResetCall
 
+
+{-  
 b2bTrans :: (CallProv TaskQ par1, CallProv TaskQ par2, Show par1, Show par2) => 
     CallRes par1 -> CallRes par2 -> Text -> Int -> Int ->
-       STransApp (ContT Bool) TaskQ NoSplitter '[()] '[()] '[] ()      
+       STransApp (ContT Bool) TaskQ NoSplitter '[()] '(('[()]),'[]) ()      
 b2bTrans callRes1 callRes2 dest timeoutCalling timeoutConnected = MkApp $ do 
   newRes #call1 callRes1
   while $ do
-    callHandler callRes2 dest timeoutCalling 
+    callHandler callRes2 dest timeoutCalling timeoutConnected
     return True
   clear #call1  
+-}

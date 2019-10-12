@@ -27,14 +27,13 @@ import            Beseder.Misc.Misc
 import            Beseder.Utils
 import            Data.String
 import            Control.Monad.Cont (ContT)
-import            Control.Monad.Identity (IdentityT)
 import            Protolude                    hiding (Product, handle, return, gets, lift, liftIO,
                                                (>>), (>>=), forever, until,try,on, gets, First)
 
 
 b2bTrans :: (CallProv TaskQ par1, CallProv TaskQ par2, Show par1, Show par2) => 
     CallRes par1 -> CallRes par2 -> Text -> STransApp (ContT Bool) TaskQ NoSplitter '[()] '[()] '[] ()      
-b2bTrans callRes1 callRes2 dest = MkApp $ do                -- [()]
+b2bTrans callRes1 callRes2 dest = MkApp $ do        -- [()]
   newRes #call1 callRes1                            -- [(call1/Idle)]
   while $ do  
     reach @("call1" :? IsCallOffered) nextEv        -- [(call1/Offered)]

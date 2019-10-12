@@ -115,7 +115,7 @@ instance (TaskPoster m) => CallProv m JanusCallPars where
   answerCall (AnswerCall (SDPAnswer sdpText)) (MkCallOffered callStateVar) = do
     callData <- getCallDataVar callStateVar
     liftIO $ sendJanusRequest (JanusAcceptReq sdpText)  (serverHandler callData)
-    liftIO $ atomically $ writeTVar callStateVar (CallDisconnectedState callData)
+    liftIO $ atomically $ writeTVar callStateVar (CallAnsweringState callData Nothing)
     return $ toVariant (MkCallAnswering callStateVar)
 
   resetDisconnectedCall ResetCall (MkCallDisconnected callStateVar) = do
@@ -276,16 +276,21 @@ serverMsgHandler callStateVar serverMsg = do
         cb (toVariant $ MkCallDisconnected callStateVar) 
     (CallAnsweredState callData _ (Just cb), JanusWebRtcUp) ->
       do 
+        -- liftIO $ putStrLn ("********* Switch to connected state from answered state"::Text)
         liftIO $ atomically $ writeTVar callStateVar (CallConnectedState callData Nothing)
         cb (toVariant $ MkCallConnected callStateVar) 
     (CallAnsweringState callData (Just cb), JanusWebRtcUp) ->
       do 
+        -- liftIO $ putStrLn ("********* Switch to connected state from answering state"::Text)
         liftIO $ atomically $ writeTVar callStateVar (CallConnectedState callData Nothing)
         cb (toVariant $ MkCallConnected callStateVar) 
     (CallDialingState callData (Just cb), JanusCallProgressEvent  Accepted (Just answer)) ->
       do 
         liftIO $ atomically $ writeTVar callStateVar (CallAnsweredState callData (SDPAnswer answer) Nothing)
         cb (toVariant $ MkCallAnswered callStateVar) 
+    (_,JanusWebRtcUp) -> do 
+      liftIO $ putStrLn ("********* Disregarding WebRtcUp !!!! "::Text)
+      return True    
     (_,_) -> return True    
 
 sipCallRes :: ConHandle -> JanusRegisterReqPs -> JanusCallRes

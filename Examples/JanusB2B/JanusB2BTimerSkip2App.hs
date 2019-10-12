@@ -23,6 +23,7 @@ import            Beseder.Janus.JanusCallProvImpl
 import            Beseder.Resources.Timer
 import            Beseder.Base.Control
 import            Beseder.Misc.Misc
+import            Data.String
 import            Control.Monad.Cont (ContT)
 import            Protolude                    hiding (Product, handle, return, gets, lift, liftIO, wait,
                                                (>>), (>>=), forever, until,try,on, gets, First)
@@ -45,9 +46,11 @@ callHandler callRes2 dest timeoutSec1 timeoutSec2 = do
       invoke #timer1 StopTimer
       sdpAnswr <- opRes #call2 getSDPAnswer
       invoke #call1 (AnswerCall sdpAnswr)
+      liftIO $ putStrLn ("****** Answer incoming call"::Text)
       skipTo @("call2" :? IsCallConnected :&& "call1" :? IsCallConnected) 
       invoke #timer2 (StartTimer timeoutSec2)
       _t1 :: _ <- whatNext -- [(call1/Connected, call2/Connected, t1/Stopped, t2/Armed)]
+      liftIO $ putStrLn ("****** Media path established; 2nd timer started"::Text)
       skipAll
   on @(By "timer1") (clear #timer1)  
   on @(By "timer2") (clear #timer2)  

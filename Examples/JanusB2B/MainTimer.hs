@@ -61,7 +61,7 @@ b2bApp srvIP port sipRegPs videoDest videoUser = do
   waitForConnectivity conHandle
   let sipRes = sipCallRes conHandle  sipRegPs
       videoRes = videoCallRes conHandle videoUser
-      transApp = b2bTrans sipRes videoRes videoDest 15 180   
+      transApp = b2bTrans sipRes videoRes videoDest 15 25   
   runAsyncApp transApp
 
 setupLog::IO()

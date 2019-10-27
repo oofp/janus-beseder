@@ -21,7 +21,9 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 -- {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
-module JanusB2BProxy where
+module JanusB2BProxy 
+  ( proxyApp
+  ) where
 
 import            Beseder.Janus.JanusCallProv
 import            Beseder.Base.Control

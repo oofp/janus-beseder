@@ -68,6 +68,7 @@ executable JanusB2BTimer
                      , protolude
                      , haskus-utils
                      , hslogger
+                     , template-haskell
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings, NoImplicitPrelude
 

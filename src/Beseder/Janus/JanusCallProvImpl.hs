@@ -17,7 +17,17 @@
 module  Beseder.Janus.JanusCallProvImpl 
   ( sipCallRes
   , videoCallRes
+  , JanusCallRes
   , JanusRegisterReqPs (..) 
+  , JCallIdle 
+  , JCallDialing 
+  , JCallConnected 
+  , JCallDisconnected 
+  , JCallOffered 
+  , JCallAnswering 
+  , JCallAnswered 
+  , JCallReleased 
+  , JanusCallPars
   ) where
 
 import            Beseder.Base.Common
@@ -315,4 +325,13 @@ videoCallRes conHandle userName =
       , rejectCallMsgPar = JanusHangupReq 
       }
       
-      
+--
+type JCallIdle m name = St (CallIdleData m JanusCallPars) name
+type JCallDialing m name = St (CallDialingData m JanusCallPars) name
+type JCallConnected m name = St (CallConnectedData m JanusCallPars) name
+type JCallDisconnected m name = St (CallDisconnectedData m JanusCallPars) name
+type JCallOffered m name = St (CallOfferedData m JanusCallPars) name
+type JCallAnswering m name = St (CallAnsweringData m JanusCallPars) name
+type JCallAnswered m name = St (CallAnsweredData m JanusCallPars) name
+type JCallReleased m name = St (CallReleasedData m JanusCallPars) name
+

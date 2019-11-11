@@ -73,6 +73,27 @@ executable JanusB2BTimer
   default-extensions:  OverloadedStrings, NoImplicitPrelude
 
 
+executable JanusB2BProxy
+  hs-source-dirs:      Examples/JanusB2B
+  main-is:             MainProxy.hs
+  other-modules:       JanusB2BProxyData
+                     , JanusB2BProxyDataApp
+                     , JanusB2BProxyDataIntrp
+  ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-T -dshow-passes -fomit-interface-pragmas -fprint-potential-instances
+  build-depends:       base
+                     , janus-beseder
+                     , janus-connector
+                     , beseder
+                     , text
+                     , mtl
+                     , protolude
+                     , haskus-utils
+                     , hslogger
+                     , template-haskell
+  default-language:    Haskell2010
+  default-extensions:  OverloadedStrings, NoImplicitPrelude
+
+
 source-repository head
   type:     git
   location: https://github.com/oofp/janus-beseder
